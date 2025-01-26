@@ -1,20 +1,22 @@
 #include "lab.h"
 #include <stdlib.h>
 
-// Define the list node structure
-typedef struct list_node {
-    void *data;
-    struct list_node *next;
-    struct list_node *prev;
-} list_node_t;
 
-// Define the list structure
-struct list_t {
-    void (*destroy_data)(void *);
-    int (*compare_to)(const void *, const void *);
-    size_t size;
-    list_node_t *head;
-};
+
+// // Define the list node structure
+// typedef struct list_node {
+//     void *data;
+//     struct list_node *next;
+//     struct list_node *prev;
+// } list_node_t;
+
+// // Define the list structure
+// struct list_t {
+//     void (*destroy_data)(void *);
+//     int (*compare_to)(const void *, const void *);
+//     size_t size;
+//     list_node_t *head;
+// };
 
 // Function to create a new list
 list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, const void *)) {
@@ -22,10 +24,20 @@ list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, 
     if (list == NULL) {
         return NULL;
     }
+
+// Making sentinel node
+node_t *sentinel = (node_t *)malloc(sizeof(node_t));
+    if (sentinel == NULL) {
+        return NULL;
+    }
+    sentinel->data = NULL;
+    sentinel->next = sentinel;
+    sentinel->prev = sentinel;
+
     list->destroy_data = destroy_data;
     list->compare_to = compare_to;
     list->size = 0;
-    list->head = NULL;
+    list->head = sentinel;
     return list; 
 }
 
@@ -34,15 +46,16 @@ void list_destroy(list_t **list) {
     if (list == NULL || *list == NULL) {
         return;
     }
-    list_node_t *current = (*list)->head;
-    while (current != NULL) {
-        list_node_t *next = current->next;
+    node_t *current = (*list)->head->next;
+    while (current != (*list)->head) {
+        node_t *next = current->next;
         if ((*list)->destroy_data) { 
             (*list)->destroy_data(current->data);
         }
         free(current);
         current = next;
     }
+    free((*list)->head);
     free(*list);
     *list = NULL;
 }
@@ -56,7 +69,7 @@ list_t *list_add(list_t *list, void *data) {
     
 
     // Create a new node
-    list_node_t *new_node = (list_node_t *)malloc(sizeof(list_node_t));
+    node_t *new_node = (node_t *)malloc(sizeof(node_t));
     if (new_node == NULL) {
         return NULL;
     }
@@ -65,23 +78,25 @@ list_t *list_add(list_t *list, void *data) {
     new_node->data = data;
 
     if (list->size == 0) {
-        new_node->next = NULL;
-        new_node->prev = NULL;
+        // Setting the new node
+        new_node->next = list->head; //Point to sentinel
+        new_node->prev = list->head; //Point to sentinel
+
+        // Setting the sentinel
+        list->head->prev = new_node;
     } else {
-        new_node->next = list->head;
-        new_node->prev = list->head->prev;
+        // Setting the new node
+        new_node->next = list->head->next; //Point to first node
+        new_node->prev = list->head; //Point to sentinel
+
+        // Setting the first node
+        list->head->next->prev = new_node;
+
     }
 
-    // Update the head to the new node
-    
-    if (list->size == 1) {
-        list->head->next = new_node;
-        list->head->prev = new_node;
-    } else if (list->size > 1) {
-        list->head->prev = new_node;
-    }
+    // Setting the Sentinel
+    list->head->next = new_node;
 
-    list->head = new_node;
     list->size++;
 
     return list;
@@ -93,20 +108,17 @@ void *list_remove_index(list_t *list, size_t index) {
         return NULL;
     }
 
-    list_node_t *current = list->head;
-    list_node_t *previous = NULL;
+    node_t *current = list->head->next;
     for (size_t i = 0; i < index; i++) {
-        previous = current;
         current = current->next;
     }
 
-    if (previous == NULL) {
-        list->head->next->prev = list->head->prev;
-        list->head->prev->next = list->head->next;
-        list->head = current->next;
+    if (current == list->head->next) {
+        list->head->next->next->prev = list->head;
+        list->head->next = list->head->next->next;
     } else {
-        previous->next = current->next;
-        current->next->prev = previous;
+        current->prev->next = current->next;
+        current->next->prev = current->prev;
     }
 
     void *data = current->data;
@@ -122,7 +134,7 @@ int list_indexof(list_t *list, void *data) {
         return -1;
     }
 
-    list_node_t *current = list->head;
+    node_t *current = list->head->next;
     size_t index = 0;
     while (index < list->size) {
         if (list->compare_to(current->data, data) == 0) {

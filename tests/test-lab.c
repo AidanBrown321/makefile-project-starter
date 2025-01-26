@@ -98,6 +98,18 @@ void test_add2(void)
   TEST_ASSERT_TRUE(*((int *)lst_->head->prev->data) == 1);
 }
 
+void test_add_multiple(void)
+{
+  list_add(lst_, alloc_data(1));
+  list_add(lst_, alloc_data(2));
+  list_add(lst_, alloc_data(3));
+  TEST_ASSERT_TRUE(lst_->size == 3);
+  TEST_ASSERT_TRUE(*((int *)lst_->head->next->data) == 3);
+  TEST_ASSERT_TRUE(*((int *)lst_->head->next->next->data) == 2);
+  TEST_ASSERT_TRUE(*((int *)lst_->head->next->next->next->data) == 1);
+  TEST_ASSERT_TRUE(*((int *)lst_->head->prev->data) == 1);
+}
+
 
 void test_removeIndex0(void)
 {
@@ -247,6 +259,7 @@ int main(void) {
   RUN_TEST(test_create_destroy);
   RUN_TEST(test_add1);
   RUN_TEST(test_add2);
+  RUN_TEST(test_add_multiple);
   RUN_TEST(test_removeIndex0);
   RUN_TEST(test_removeIndex3);
   RUN_TEST(test_removeIndex4);
