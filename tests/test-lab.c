@@ -98,7 +98,7 @@ void test_add2(void)
   TEST_ASSERT_TRUE(*((int *)lst_->head->prev->data) == 1);
 }
 
-void test_add_multiple(void)
+void test_add3(void)
 {
   list_add(lst_, alloc_data(1));
   list_add(lst_, alloc_data(2));
@@ -132,7 +132,70 @@ void test_removeIndex0(void)
       TEST_ASSERT_TRUE(*((int *)curr->data) == i);
       curr = curr->prev;
     }
+
 }
+
+void test_removeIndex1(void)
+{
+  populate_list();
+  int *rval = (int *)list_remove_index(lst_, 1);
+  TEST_ASSERT_TRUE(lst_->size == 4);
+  TEST_ASSERT_TRUE(*rval == 3);
+  free(rval);
+
+  node_t *curr = lst_->head->next;
+
+  //List should be 4->2->1->0
+
+  //Check the first one
+  TEST_ASSERT_TRUE(*((int *)curr->data) == 4);
+  curr = curr->next;
+  
+  for (int i = 2; i >= 0; i--)
+    {
+      TEST_ASSERT_TRUE(*((int *)curr->data) == i);
+      curr = curr->next;
+    }
+
+  //Set the curr back one node so we can check prev links
+  curr = lst_->head->prev;
+  for (int i = 0; i <= 2; i++)
+    {
+      TEST_ASSERT_TRUE(*((int *)curr->data) == i);
+      curr = curr->prev;
+    }
+
+  //Check the last one
+  TEST_ASSERT_TRUE(*((int *)curr->data) == 4);
+}
+
+void test_removeIndex2(void)
+{
+  populate_list();
+  int *rval = (int *)list_remove_index(lst_, 2);
+  TEST_ASSERT_TRUE(lst_->size == 4);
+  TEST_ASSERT_TRUE(*rval == 2);
+  free(rval);
+
+  node_t *curr = lst_->head->next;
+  //List should be 4->3->1->0
+
+  TEST_ASSERT_TRUE(*((int *)curr->data) == 4);
+  TEST_ASSERT_TRUE(*((int *)curr->next->data) == 3);
+  TEST_ASSERT_TRUE(*((int *)curr->next->next->data) == 1);
+  TEST_ASSERT_TRUE(*((int *)curr->next->next->next->data) == 0);
+
+  //Set the curr back one node so we can check prev links
+  curr = lst_->head->prev;
+
+  TEST_ASSERT_TRUE(*((int *)curr->data) == 0);
+  TEST_ASSERT_TRUE(*((int *)curr->prev->data) == 1);
+  TEST_ASSERT_TRUE(*((int *)curr->prev->prev->data) == 3);
+  TEST_ASSERT_TRUE(*((int *)curr->prev->prev->prev->data) == 4);
+  
+  
+}
+
 
 void test_removeIndex3(void)
 {
@@ -226,6 +289,15 @@ void test_removeAll(void)
   TEST_ASSERT_TRUE(lst_->size == 0);
 }
 
+void test_remove_from_empty_list(void)
+{
+    list_t *lst = list_init(destroy_data, compare_to);
+    void *data = list_remove_index(lst, 0);
+    TEST_ASSERT_TRUE(data == NULL);
+    TEST_ASSERT_TRUE(lst->size == 0);
+    list_destroy(&lst);
+}
+
 void test_indexOf0(void)
 {
   populate_list();
@@ -259,12 +331,15 @@ int main(void) {
   RUN_TEST(test_create_destroy);
   RUN_TEST(test_add1);
   RUN_TEST(test_add2);
-  RUN_TEST(test_add_multiple);
+  RUN_TEST(test_add3);
   RUN_TEST(test_removeIndex0);
+  RUN_TEST(test_removeIndex1);
+  RUN_TEST(test_removeIndex2);
   RUN_TEST(test_removeIndex3);
   RUN_TEST(test_removeIndex4);
   RUN_TEST(test_invaidIndex);
   RUN_TEST(test_removeAll);
+  RUN_TEST(test_remove_from_empty_list);
   RUN_TEST(test_indexOf0);
   RUN_TEST(test_indexOf3);
   RUN_TEST(test_notInList);

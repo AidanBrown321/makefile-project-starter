@@ -2,22 +2,6 @@
 #include <stdlib.h>
 
 
-
-// // Define the list node structure
-// typedef struct list_node {
-//     void *data;
-//     struct list_node *next;
-//     struct list_node *prev;
-// } list_node_t;
-
-// // Define the list structure
-// struct list_t {
-//     void (*destroy_data)(void *);
-//     int (*compare_to)(const void *, const void *);
-//     size_t size;
-//     list_node_t *head;
-// };
-
 // Function to create a new list
 list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, const void *)) {
     list_t *list = (list_t *)malloc(sizeof(list_t));
@@ -28,6 +12,7 @@ list_t *list_init(void (*destroy_data)(void *), int (*compare_to)(const void *, 
 // Making sentinel node
 node_t *sentinel = (node_t *)malloc(sizeof(node_t));
     if (sentinel == NULL) {
+        free(list);
         return NULL;
     }
     sentinel->data = NULL;
@@ -104,13 +89,17 @@ list_t *list_add(list_t *list, void *data) {
 
 // Function to remove data at the specified index
 void *list_remove_index(list_t *list, size_t index) {
-    if (list == NULL || index >= list->size) {
+    if (list == NULL || index >= list->size || list->size == 0) {
         return NULL;
     }
 
     node_t *current = list->head->next;
     for (size_t i = 0; i < index; i++) {
         current = current->next;
+    }
+
+    if(current == list->head) {
+        return NULL;
     }
 
     if (current == list->head->next) {
