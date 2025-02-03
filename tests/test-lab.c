@@ -103,7 +103,10 @@ void test_add3(void)
   list_add(lst_, alloc_data(1));
   list_add(lst_, alloc_data(2));
   list_add(lst_, alloc_data(3));
+  // Check the size - Code Review
   TEST_ASSERT_TRUE(lst_->size == 3);
+
+  //With three nodes both next and prev should NOT be equal - Code Review
   TEST_ASSERT_TRUE(*((int *)lst_->head->next->data) == 3);
   TEST_ASSERT_TRUE(*((int *)lst_->head->next->next->data) == 2);
   TEST_ASSERT_TRUE(*((int *)lst_->head->next->next->next->data) == 1);
@@ -293,6 +296,8 @@ void test_remove_from_empty_list(void)
 {
     list_t *lst = list_init(destroy_data, compare_to);
     void *data = list_remove_index(lst, 0);
+
+    // Should return NULL if the list is empty - Code Review
     TEST_ASSERT_TRUE(data == NULL);
     TEST_ASSERT_TRUE(lst->size == 0);
     list_destroy(&lst);
@@ -322,6 +327,8 @@ void test_notInList(void)
   populate_list();
   void *data = alloc_data(22);
   int idx = list_indexof(lst_, data);
+
+  // Should return -1 if the data is not in the list - Code Review
   TEST_ASSERT_EQUAL_INT64(-1, idx);
   free(data);
 }
